@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Sex {
+    MALE
+    FEMALE
+}
+
+enum CollectionTag {
+    JOB
+    STUDY
+    HOME
+    FREETIME
+}
+
+enum taskStaus {
+    TODO
+    DONE
+}
+
+model User {
+    id          String       @id @default(cuid())
+    firstName   String
+    lastName    String
+    email       String       @unique
+    age         Int?
+    sex         Sex?
+    tasks       Task[]
+    collections Collection[]
+
+    @@index([email])
+}
+
+model Task {
+    id           String      @id @default(cuid())
+    title        String
+    authorId     String
+    author       User        @relation(fields: [authorId], references: [id])
+    content      String
+    createdAt    DateTime    @default(now())
+    modifiedAt   DateTime?
+    status       taskStaus
+    collectionId String?
+    collection   Collection? @relation(fields: [collectionId], references: [id])
+
+    @@index([title])
+}
+
+model Collection {
+    id         String        @id @default(cuid())
+    authorId   String
+    author     User          @relation(fields: [authorId], references: [id])
+    title      String
+    tag        CollectionTag
+    tasks      Task[]
+    createdAt  DateTime      @default(now())
+    modifiedAt DateTime?
+
+    @@index([tag])
+}
